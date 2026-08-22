@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="慶應ラクロス部 40周年">
+  <rect width="64" height="64" fill="#0B2350"/>
+  <rect x="4" y="4" width="56" height="56" fill="none" stroke="#C8A24B" stroke-width="2"/>
+  <text x="32" y="42" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-weight="700"
+        fill="#C8A24B" text-anchor="middle" letter-spacing="1">40</text>
+</svg>
