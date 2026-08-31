@@ -202,7 +202,17 @@ a:focus-visible, button:focus-visible{
     radial-gradient(120% 90% at 12% 100%, rgba(10,7,87,.45) 0%, transparent 55%),
     linear-gradient(180deg, #05033F 0%, var(--navy) 26%, var(--ground) 72%, var(--abyss) 100%);
 }
-#net{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+/* 背景写真は最背面。網はその上、文字はさらに上に重ねる */
+.hero-media{ position:absolute; inset:0; z-index:0; }
+.hero-media .photo{ width:100%; height:100%; border:0; }
+.hero-media picture{ display:block; width:100%; height:100%; }
+.hero-media::after{      /* 写真の上に紺をかぶせて文字を読ませる */
+  content:""; position:absolute; inset:0; z-index:1;
+  background:
+    linear-gradient(95deg, rgba(2,1,28,.90) 0%, rgba(4,2,61,.62) 46%, rgba(2,1,28,.40) 100%),
+    linear-gradient(180deg, rgba(2,1,28,.32) 0%, rgba(2,1,28,.10) 34%, rgba(1,0,16,.86) 100%);
+}
+#net{ position:absolute; inset:0; width:100%; height:100%; display:block; z-index:2; }
 .hero::after{ /* 下端を地の色に溶かす */
   content:""; position:absolute; left:0; right:0; bottom:0; height:32vh;
   background:linear-gradient(180deg, transparent, var(--ground));
@@ -664,6 +674,39 @@ tbody tr.in{ opacity:1; transform:none; }
 .alert b{ color:#7A5A00; }
 
 /* =========================================================
+   外部リンク（男子HP・女子HP・公式LINE）
+   ========================================================= */
+.links{ display:grid; gap:16px; grid-template-columns:1fr; }
+@media (min-width:860px){ .links{ grid-template-columns:repeat(3,1fr); gap:20px; } }
+.link-card{
+  display:flex; align-items:center; gap:18px;
+  padding:22px 22px; text-decoration:none;
+  background:linear-gradient(165deg, var(--navy) 0%, #050334 100%);
+  border:1px solid var(--line-soft); color:var(--on-dark);
+  transition:border-color .35s var(--ease), transform .35s var(--ease), background .35s var(--ease);
+}
+.link-card:hover, .link-card:focus-visible{
+  border-color:var(--gold); transform:translateY(-4px);
+}
+.link-ico{
+  flex:none; width:62px; height:62px; display:grid; place-items:center;
+  background:rgba(255,255,255,.05); border:1px solid var(--line-soft); border-radius:2px;
+}
+.link-ico img{ max-width:46px; max-height:46px; width:auto; height:auto; }
+.link-ico-line{ background:#06C755; border-color:#06C755; }
+.link-ico-line svg{ width:34px; height:34px; display:block; }
+.link-body{ display:flex; flex-direction:column; gap:5px; min-width:0; }
+.link-body b{
+  font-size:16px; letter-spacing:.05em; color:#fff; font-weight:700;
+}
+.link-body span{ font-size:12.5px; line-height:1.7; color:var(--on-dark-mute); }
+.link-go{
+  margin-left:auto; flex:none; color:var(--gold); font-size:19px;
+  transition:transform .35s var(--ease);
+}
+.link-card:hover .link-go{ transform:translateX(5px); }
+
+/* =========================================================
    フッター
    ========================================================= */
 .site-footer{
@@ -749,7 +792,7 @@ tbody tr.in{ opacity:1; transform:none; }
   <!-- ============ ヒーロー ============ -->
   <section class="hero" id="top">
     <div class="hero-media" aria-hidden="true">
-      <span class="photo photo-bleed clip" data-label="写真：ヒーロー背景（hero）"></span>
+      <span class="photo photo-bleed clip is-filled"><picture><source srcset="assets/img/hero.webp" type="image/webp"><img src="assets/img/hero.jpg" alt="男子部の選手がスタンドの応援に向かって肩を組み並ぶ様子" width="2000" height="1334" style="object-position:center 60%;" fetchpriority="high" decoding="async"></picture></span>
     </div>
     <canvas id="net" aria-hidden="true"></canvas>
 
@@ -855,7 +898,7 @@ tbody tr.in{ opacity:1; transform:none; }
           </p>
         </div>
         <div class="rv">
-          <span class="photo r-4x5 clip" data-label="写真：創部期または現在を象徴する1枚（story／縦長 4:5）"></span>
+          <span class="photo r-4x5 clip is-filled"><span class="par"><picture><source srcset="assets/img/story.webp" type="image/webp"><img src="assets/img/story.jpg" alt="女子部の選手がボールを運ぶ場面" width="1400" height="933" style="object-position:center 30%;" loading="lazy" decoding="async"></picture></span></span>
         </div>
       </div>
     </div>
@@ -874,7 +917,7 @@ tbody tr.in{ opacity:1; transform:none; }
 
       <div class="teams stagger">
         <article class="team">
-          <span class="photo r-4x3 clip" data-label="写真：男子部のプレー 主役（mens-01／横長 4:3）"></span>
+          <span class="photo r-4x3 clip is-filled"><span class="par"><picture><source srcset="assets/img/mens-01.webp" type="image/webp"><img src="assets/img/mens-01.jpg" alt="男子部の選手がヘルメット姿で円陣を組む場面" width="1600" height="1067" style="object-position:center 50%;" loading="lazy" decoding="async"></picture></span></span>
           <div class="team-body">
             <div class="team-head">
               <picture>
@@ -890,14 +933,14 @@ tbody tr.in{ opacity:1; transform:none; }
             <p class="team-goal">王座復権へ</p>
             <p class="t">男子チームは「KING」を掲げ、王座復権を目指しています。</p>
             <div class="team-strip">
-              <span class="photo r-3x2 clip" data-label="写真：男子部 mens-02"></span>
-              <span class="photo r-3x2 clip" data-label="写真：男子部 mens-03"></span>
+              <span class="photo r-3x2 clip is-filled"><span class="par"><picture><source srcset="assets/img/mens-02.webp" type="image/webp"><img src="assets/img/mens-02.jpg" alt="大観衆を背にした男子部のサイドライン" width="1000" height="667" style="object-position:center 50%;" loading="lazy" decoding="async"></picture></span></span>
+              <span class="photo r-3x2 clip is-filled"><span class="par"><picture><source srcset="assets/img/mens-03.webp" type="image/webp"><img src="assets/img/mens-03.jpg" alt="ナイター照明の下で円陣を組む男子部" width="1000" height="667" style="object-position:center 50%;" loading="lazy" decoding="async"></picture></span></span>
             </div>
           </div>
         </article>
 
         <article class="team">
-          <span class="photo r-4x3 clip" data-label="写真：女子部のプレー 主役（womens-01／横長 4:3）"></span>
+          <span class="photo r-4x3 clip is-filled"><span class="par"><picture><source srcset="assets/img/womens-01.webp" type="image/webp"><img src="assets/img/womens-01.jpg" alt="女子部の選手が相手を抜いてボールを運ぶ場面" width="1566" height="1044" style="object-position:center 40%;" loading="lazy" decoding="async"></picture></span></span>
           <div class="team-body">
             <div class="team-head">
               <picture>
@@ -913,8 +956,8 @@ tbody tr.in{ opacity:1; transform:none; }
             <p class="team-goal">4年ぶりの栄光へ</p>
             <p class="t">女子チームは「DRIVE」を掲げ、4年ぶりの栄光を目指しています。</p>
             <div class="team-strip">
-              <span class="photo r-3x2 clip" data-label="写真：女子部 womens-02"></span>
-              <span class="photo r-3x2 clip" data-label="写真：女子部 womens-03"></span>
+              <span class="photo r-3x2 clip is-filled"><span class="par"><picture><source srcset="assets/img/womens-02.webp" type="image/webp"><img src="assets/img/womens-02.jpg" alt="勝利の後にクロスを高く掲げる女子部の選手たち" width="1000" height="750" style="object-position:center 40%;" loading="lazy" decoding="async"></picture></span></span>
+              <span class="photo r-3x2 clip is-filled"><span class="par"><picture><source srcset="assets/img/womens-03.webp" type="image/webp"><img src="assets/img/womens-03.jpg" alt="青いフィールドでの女子部の攻防" width="1000" height="667" style="object-position:center 45%;" loading="lazy" decoding="async"></picture></span></span>
             </div>
           </div>
         </article>
@@ -968,7 +1011,7 @@ tbody tr.in{ opacity:1; transform:none; }
 
       <div class="cards stagger" id="cards">
         <article class="card tilt">
-          <span class="photo r-3x2 clip" data-label="写真：練習・トレーニング（use-polish／3:2）"></span>
+          <span class="photo r-3x2 clip is-filled"><span class="par"><picture><source srcset="assets/img/use-polish.webp" type="image/webp"><img src="assets/img/use-polish.jpg" alt="練習の合間にグラウンドで過ごす部員" width="1400" height="933" style="object-position:center 45%;" loading="lazy" decoding="async"></picture></span></span>
           <div class="card-body">
             <span class="card-mark">① Polish</span>
             <h3>磨く<span class="sub">日々の成長を支える練習環境</span></h3>
@@ -981,7 +1024,7 @@ tbody tr.in{ opacity:1; transform:none; }
         </article>
 
         <article class="card tilt">
-          <span class="photo r-3x2 clip" data-label="写真：試合・遠征（use-fight／3:2）"></span>
+          <span class="photo r-3x2 clip is-filled"><span class="par"><picture><source srcset="assets/img/use-fight.webp" type="image/webp"><img src="assets/img/use-fight.jpg" alt="クロスを掲げて入場する女子部の列" width="1400" height="933" style="object-position:center 50%;" loading="lazy" decoding="async"></picture></span></span>
           <div class="card-body">
             <span class="card-mark">② Fight</span>
             <h3>戦う<span class="sub">挑戦の機会を支える活動基盤</span></h3>
@@ -994,7 +1037,7 @@ tbody tr.in{ opacity:1; transform:none; }
         </article>
 
         <article class="card tilt">
-          <span class="photo r-3x2 clip" data-label="写真：テント・運営・応援（use-support／3:2）"></span>
+          <span class="photo r-3x2 clip is-filled"><span class="par"><picture><source srcset="assets/img/use-support.webp" type="image/webp"><img src="assets/img/use-support.jpg" alt="横断幕を掲げて声を送るスタンドの応援" width="1400" height="1050" style="object-position:center 45%;" loading="lazy" decoding="async"></picture></span></span>
           <div class="card-body">
             <span class="card-mark">③ Support</span>
             <h3>支える<span class="sub">ラクロス部全体で使う共通の基盤</span></h3>
@@ -1024,7 +1067,7 @@ tbody tr.in{ opacity:1; transform:none; }
     <div class="wrap">
       <div class="story-grid" style="margin-bottom:clamp(36px,5vw,56px);">
         <div class="rv">
-          <span class="photo r-4x3 clip" data-label="写真：部員の集合など（report／4:3・任意）"></span>
+          <span class="photo r-4x3 clip is-filled"><span class="par"><picture><source srcset="assets/img/report.webp" type="image/webp"><img src="assets/img/report.jpg" alt="試合後、支えてくれた人たちと喜びを分かち合う様子" width="1600" height="1067" style="object-position:center 40%;" loading="lazy" decoding="async"></picture></span></span>
         </div>
         <div class="rv">
           <picture><source srcset="assets/img/logo-40th-navy.webp" type="image/webp"><img class="logo sec-logo" src="assets/img/logo-40th-navy.png" alt="慶應ラクロス 創部40周年ロゴ" width="977" height="620" loading="lazy"></picture>
@@ -1155,6 +1198,53 @@ tbody tr.in{ opacity:1; transform:none; }
     </div>
   </section>
 
+  <!-- ============ 外部リンク ============ -->
+  <section class="section s-dark" id="links">
+    <div class="wrap">
+      <div class="sec-head rv" style="text-align:center;">
+        <picture><source srcset="assets/img/logo-40th-white.webp" type="image/webp"><img class="logo sec-logo sec-logo-c" src="assets/img/logo-40th-white.png" alt="慶應ラクロス 創部40周年ロゴ" width="977" height="620" loading="lazy"></picture>
+        <span class="sec-num" style="justify-content:center;">Follow us</span>
+        <h2 class="sec-title">
+          慶應ラクロスの「いま」は、<br>それぞれの場所でお届けしています。
+          <span class="thin">試合結果や日々の活動は各公式サイトと公式LINEで発信しています。ぜひご覧ください。</span>
+        </h2>
+      </div>
+
+      <div class="links stagger">
+        <a class="link-card" href="https://www.keiomenslacrosse.com/" target="_blank" rel="noopener">
+          <span class="link-ico">
+            <picture><source srcset="assets/img/logo-mens.webp" type="image/webp"><img src="assets/img/logo-mens.png" alt="" width="579" height="367" loading="lazy"></picture>
+          </span>
+          <span class="link-body">
+            <b>男子部 公式サイト</b>
+            <span>試合結果・選手紹介・お知らせ</span>
+          </span>
+          <span class="link-go" aria-hidden="true">→</span>
+        </a>
+
+        <a class="link-card" href="https://keio-womenslacrosse.com/" target="_blank" rel="noopener">
+          <span class="link-ico">
+            <picture><source srcset="assets/img/logo-womens.webp" type="image/webp"><img src="assets/img/logo-womens.png" alt="" width="391" height="370" loading="lazy"></picture>
+          </span>
+          <span class="link-body">
+            <b>女子部 公式サイト</b>
+            <span>試合結果・選手紹介・お知らせ</span>
+          </span>
+          <span class="link-go" aria-hidden="true">→</span>
+        </a>
+
+        <a class="link-card" href="https://lin.ee/cvTAzM6" target="_blank" rel="noopener">
+          <span class="link-ico link-ico-line"><svg viewBox="0 0 24 24" aria-hidden="true" fill="#fff"><path d="M12 3C6.9 3 2.8 6.4 2.8 10.6c0 3.8 3.3 6.9 7.7 7.5.3.07.7.2.8.5.07.25.05.65.02.9l-.13.8c-.04.24-.19.93.82.5 1-.42 5.4-3.2 7.4-5.5 1.35-1.5 2-3 2-4.7C21.4 6.4 17.2 3 12 3zM8.2 13.2h-1.6c-.23 0-.42-.19-.42-.42V9.6c0-.23.19-.42.42-.42s.42.19.42.42v2.76h1.18c.23 0 .42.19.42.42s-.19.42-.42.42zm1.9-.42c0 .23-.19.42-.42.42s-.42-.19-.42-.42V9.6c0-.23.19-.42.42-.42s.42.19.42.42v3.18zm3.9 0c0 .18-.12.34-.29.4a.42.42 0 01-.13.02.42.42 0 01-.34-.17l-1.63-2.22v1.97c0 .23-.19.42-.42.42s-.42-.19-.42-.42V9.6c0-.18.12-.34.29-.4a.43.43 0 01.47.15l1.63 2.22V9.6c0-.23.19-.42.42-.42s.42.19.42.42v3.18zm2.6-2.01c.23 0 .42.19.42.42s-.19.42-.42.42h-1.18v.75h1.18c.23 0 .42.19.42.42s-.19.42-.42.42h-1.6a.42.42 0 01-.42-.42V9.6c0-.23.19-.42.42-.42h1.6c.23 0 .42.19.42.42s-.19.42-.42.42h-1.18v.75h1.18z"/></svg></span>
+          <span class="link-body">
+            <b>公式LINE</b>
+            <span>友だち追加で最新情報が届きます</span>
+          </span>
+          <span class="link-go" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <footer class="site-footer">
@@ -1165,6 +1255,7 @@ tbody tr.in{ opacity:1; transform:none; }
     <ul class="footer-links">
       <li><a href="https://www.keiomenslacrosse.com/" target="_blank" rel="noopener">男子部 公式サイト</a></li>
       <li><a href="https://keio-womenslacrosse.com/" target="_blank" rel="noopener">女子部 公式サイト</a></li>
+      <li><a href="https://lin.ee/cvTAzM6" target="_blank" rel="noopener">公式LINE</a></li>
       <li><a href="mailto:fund@mitalax.onmicrosoft.com">お問い合わせ</a></li>
     </ul>
     <p class="copyright">© KEIO UNIVERSITY LACROSSE CLUB. All rights reserved.</p>
@@ -1268,7 +1359,7 @@ tbody tr.in{ opacity:1; transform:none; }
           fade = clamp(fade * 0.5 + 0.12, 0, 1);
           if (i + 1 < cols && j + 1 < rows) {
             var right = pts[idx + 1], down = pts[idx + cols];
-            ctx.strokeStyle = 'rgba(200,162,75,' + (0.16 * fade).toFixed(3) + ')';
+            ctx.strokeStyle = 'rgba(200,162,75,' + (0.13 * fade).toFixed(3) + ')';
             ctx.beginPath();
             ctx.moveTo(p.x, p.y); ctx.lineTo(right.x, right.y);
             ctx.moveTo(p.x, p.y); ctx.lineTo(down.x, down.y);
@@ -1355,19 +1446,34 @@ tbody tr.in{ opacity:1; transform:none; }
       Array.prototype.forEach.call(items, function (el) { el.classList.add('in'); });
       return;
     }
+
+    function show(el) {
+      // 表は行を順番に出す
+      if (el.tagName === 'TR') {
+        el.style.transitionDelay = (Array.prototype.indexOf.call(el.parentNode.children, el) * 0.12) + 's';
+      }
+      el.classList.add('in');
+    }
+
+    // clip-path で高さ0に潰れている要素は、そのままだと交差判定に入らず永久に出てこない。
+    // そういう要素は親を見張って、親が見えたら子に .in を付ける。
+    var watchers = new Map();
+    Array.prototype.forEach.call(items, function (el) {
+      var target = (el.classList.contains('clip') && el.parentElement) ? el.parentElement : el;
+      var list = watchers.get(target);
+      if (!list) { list = []; watchers.set(target, list); }
+      list.push(el);
+    });
+
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (!en.isIntersecting) return;
-        var el = en.target;
-        // 表は行を順番に出す
-        if (el.tagName === 'TR') {
-          el.style.transitionDelay = (Array.prototype.indexOf.call(el.parentNode.children, el) * 0.12) + 's';
-        }
-        el.classList.add('in');
-        io.unobserve(el);
+        (watchers.get(en.target) || []).forEach(show);
+        io.unobserve(en.target);
       });
     }, { rootMargin: '0px 0px -12% 0px', threshold: 0.12 });
-    Array.prototype.forEach.call(items, function (el) { io.observe(el); });
+
+    watchers.forEach(function (list, target) { io.observe(target); });
   })();
 
   /* ---------------------------------------------------
