@@ -39,8 +39,6 @@
    デザイン方針
    - 紺(#04023D)を基準に、同色相で暗い側へ段階をつけたダーク主体。読ませる箇所だけ明るい紙面に反転させ、
      「暗→明→暗」のリズムで縦スクロールに起伏をつける
-   - 主役の演出はラクロスのポケット(網)。ヒーロー背景のCanvasに網目を描き、
-     マウス位置で波打たせる。スマホではスクロールと自走で揺れる
    - 動きはすべて transform / opacity のみ。低速端末と
      prefers-reduced-motion では自動的に静止する
    - 外部ライブラリ・外部フォントは一切使わない（1ファイルで完結させる）
@@ -57,14 +55,18 @@
   --paper-2:     #FFFFFF;
 
   /* 文字 */
-  --on-dark:     #E7E6F5;
-  --on-dark-mute:#9995C0;
+  /* 文字色は暗い面・明るい面それぞれで WCAG AA（4.5:1）を大きく上回るように取る。
+     ご年配の方でも読めるよう、控えめな文字も 10:1 前後を確保する */
+  --on-dark:     #E7E6F5;  /* 地の上で 16.4:1 */
+  --on-dark-mute:#BCB8DA;  /* 地の上で 10.8:1（旧 #9995C0 は 7.2:1 で弱かった） */
   --on-light:    #16162E;
-  --on-light-mute:#5C5A6C;
+  --on-light-mute:#4A4857;  /* 紙の上で 8.2:1（旧 #5C5A6C は 6.2:1） */
 
   /* 差し色 */
-  --gold:        #C8A24B;
+  --gold:        #C8A24B;   /* 暗い面用。地の上で 8.5:1 */
   --gold-2:      #E8CE8F;
+  /* 明るい面で金をそのまま使うと 2.2:1 しか出ず読めないので、明るい面専用の濃い金を持つ */
+  --gold-ink:    #7A5D14;   /* 紙の上で 5.7:1 */
   --line-dark:   rgba(200,162,75,.22);
   --line-soft:   rgba(231,230,245,.10);
   --line-light:  #DCD8CF;
@@ -82,6 +84,9 @@
 *,*::before,*::after{ box-sizing:border-box; }
 
 html{ scroll-behavior:smooth; }
+/* 固定ヘッダーの下に見出しが潜らないよう、アンカー移動先に余白を持たせる */
+section[id]{ scroll-margin-top:92px; }
+@media (max-width:560px){ section[id]{ scroll-margin-top:68px; } }
 @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
 
 body{
@@ -89,7 +94,7 @@ body{
   background:var(--ground);
   color:var(--on-dark);
   font-family:var(--gothic);
-  font-size:16px;
+  font-size:17px;   /* 読み手にOB・OG世代を想定し、本文を1段大きく取る */
   line-height:1.95;
   letter-spacing:.02em;
   -webkit-font-smoothing:antialiased;
@@ -98,6 +103,20 @@ body{
 
 img{ max-width:100%; height:auto; display:block; }
 a{ color:var(--gold-2); }
+
+/* 目には見えないが、読み上げには渡す文字。
+   1文字ずつ分解する演出のように、見た目の都合で構造を壊す箇所の補助に使う */
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+/* キーボードで到達したときだけ現れる「本文へスキップ」 */
+.skip-link{
+  position:absolute; left:-9999px; top:0; z-index:100;
+  background:var(--paper-2); color:var(--navy);
+  font-weight:700; padding:14px 22px; text-decoration:none;
+}
+.skip-link:focus{ left:16px; top:16px; }
 
 a:focus-visible, button:focus-visible{
   outline:3px solid var(--gold);
@@ -146,14 +165,15 @@ a:focus-visible, button:focus-visible{
 }
 .brand{ display:flex; flex-direction:column; line-height:1.3; }
 .brand b{ font-family:var(--mincho); font-size:15px; font-weight:600; letter-spacing:.08em; color:#fff; white-space:nowrap; }
-.brand span{ font-family:var(--display); font-size:9.5px; letter-spacing:.3em; color:var(--gold); white-space:nowrap; }
+.brand span{ font-family:var(--display); font-size:11px; letter-spacing:.24em; color:var(--gold); white-space:nowrap; }
 /* 狭い画面で部名とボタンが2行に折れないよう、どちらも詰める */
 @media (max-width:560px){
   .site-header .wrap{ min-height:56px; padding-inline:16px; gap:10px; }
   .brand-logo{ height:32px; }
   .brand{ gap:9px; }
-  .brand b{ font-size:12px; letter-spacing:.01em; }
-  .brand span{ font-size:7.5px; letter-spacing:.18em; }
+  /* スマホでは 10px を切る英字サブタイトルを出さず、部名を読める大きさにする */
+  .brand b{ font-size:14px; letter-spacing:.01em; }
+  .brand span{ display:none; }
   .site-header .btn{ padding:9px 13px; font-size:11.5px; letter-spacing:.02em; white-space:nowrap; }
 }
 
@@ -167,8 +187,10 @@ a:focus-visible, button:focus-visible{
   text-decoration:none; cursor:pointer;
   transition:color .3s var(--ease), border-color .3s var(--ease), transform .3s var(--ease);
 }
-.btn::before{ /* 金色の面が下から立ち上がる */
-  content:""; position:absolute; inset:0; z-index:-1;
+.btn::before{ /* 金色の面が下から立ち上がる。
+    z-index:-1 だとボタン自身の背景の裏に回り込み、面が見えないまま文字色だけ暗くなって
+    「マウスを乗せると文字が消える」状態になる。0 にして背景の上・文字の下に置く */
+  content:""; position:absolute; inset:0; z-index:0;
   background:linear-gradient(120deg, var(--gold) 0%, var(--gold-2) 100%);
   transform:translateY(101%); transition:transform .45s var(--ease);
 }
@@ -182,7 +204,7 @@ a:focus-visible, button:focus-visible{
 .btn-dark{ color:#fff; background:var(--navy); }
 .btn-dark:hover, .btn-dark:focus-visible{ color:#05033A; }
 .btn-dark:hover::before, .btn-dark:focus-visible::before{ transform:translateY(0); }
-.btn-sm{ padding:11px 20px; font-size:13px; }
+.btn-sm{ padding:11px 20px; font-size:14px; }
 .btn-block{ display:flex; width:100%; }
 .btn-arrow::after{ content:"→"; position:relative; z-index:1; transition:transform .35s var(--ease); }
 .btn:hover.btn-arrow::after{ transform:translateX(5px); }
@@ -206,13 +228,13 @@ a:focus-visible, button:focus-visible{
 .hero-media{ position:absolute; inset:0; z-index:0; }
 .hero-media .photo{ width:100%; height:100%; border:0; }
 .hero-media picture{ display:block; width:100%; height:100%; }
-.hero-media::after{      /* 写真の上に紺をかぶせて文字を読ませる */
+.hero-media::after{      /* 写真の上に紺をかぶせて文字を読ませる。
+    文字が乗る左半分は濃く、写真を見せたい右側は薄く残す */
   content:""; position:absolute; inset:0; z-index:1;
   background:
-    linear-gradient(95deg, rgba(2,1,28,.90) 0%, rgba(4,2,61,.62) 46%, rgba(2,1,28,.40) 100%),
-    linear-gradient(180deg, rgba(2,1,28,.32) 0%, rgba(2,1,28,.10) 34%, rgba(1,0,16,.86) 100%);
+    linear-gradient(95deg, rgba(2,1,28,.94) 0%, rgba(2,1,28,.86) 30%, rgba(4,2,61,.60) 62%, rgba(2,1,28,.38) 100%),
+    linear-gradient(180deg, rgba(2,1,28,.34) 0%, rgba(2,1,28,.12) 34%, rgba(1,0,16,.86) 100%);
 }
-#net{ position:absolute; inset:0; width:100%; height:100%; display:block; z-index:2; }
 .hero::after{ /* 下端を地の色に溶かす */
   content:""; position:absolute; left:0; right:0; bottom:0; height:32vh;
   background:linear-gradient(180deg, transparent, var(--ground));
@@ -223,7 +245,7 @@ a:focus-visible, button:focus-visible{
 
 .eyebrow{
   display:inline-flex; align-items:center; gap:.9em;
-  font-family:var(--display); font-size:11px; letter-spacing:.34em;
+  font-family:var(--display); font-size:12.5px; letter-spacing:.3em;
   color:var(--gold); margin:0 0 30px; text-transform:uppercase;
 }
 .eyebrow::before{ content:""; width:44px; height:1px; background:var(--gold); }
@@ -232,10 +254,13 @@ a:focus-visible, button:focus-visible{
   font-family:var(--mincho); font-weight:600;
   font-size:clamp(30px, 5.2vw, 52px); line-height:1.42; letter-spacing:.03em;
   margin:0 0 30px; color:#fff; text-wrap:balance;
+  text-shadow:0 2px 18px rgba(1,0,16,.55);
 }
+/* 写真の明るい部分に文字がかかっても読めるよう、白に近い色で置く */
 .hero-lead{
-  font-size:clamp(15px,1.7vw,17px); color:var(--on-dark-mute);
+  font-size:clamp(16px,1.7vw,18px); color:#DEDCF0;
   max-width:33em; margin:0 0 44px;
+  text-shadow:0 1px 14px rgba(1,0,16,.6);
 }
 
 /* 見出しの行を下からせり上げる（マスク） */
@@ -266,20 +291,20 @@ a:focus-visible, button:focus-visible{
 @media (max-width:640px){ .facts{ grid-template-columns:1fr 1fr; gap:18px 28px; } }
 .facts dl{ margin:0; }
 .facts dt{
-  font-family:var(--display); font-size:10px; letter-spacing:.24em;
+  font-family:var(--display); font-size:12px; letter-spacing:.22em;
   color:var(--gold); margin-bottom:6px; text-transform:uppercase;
 }
 .facts dd{
   margin:0; font-family:var(--mincho); font-size:clamp(21px,3.2vw,30px);
   line-height:1.25; color:#fff; font-variant-numeric:tabular-nums;
 }
-.facts dd .u{ font-size:.55em; margin-left:.15em; }
+.facts dd .u{ font-size:.62em; margin-left:.15em; }
 
 .scroll-cue{
   position:absolute; left:50%; bottom:26px; z-index:3;
   transform:translateX(-50%);
   display:flex; flex-direction:column; align-items:center; gap:10px;
-  font-family:var(--display); font-size:9px; letter-spacing:.3em; color:var(--on-dark-mute);
+  font-family:var(--display); font-size:11px; letter-spacing:.28em; color:var(--on-dark-mute);
 }
 .scroll-cue i{ display:block; width:1px; height:46px; background:linear-gradient(180deg, var(--gold), transparent); }
 @media (max-width:820px){ .scroll-cue{ display:none; } }
@@ -288,9 +313,9 @@ a:focus-visible, button:focus-visible{
 @media (max-width:560px){
   .hero{ min-height:auto; padding:96px 0 56px; }
   .hero h1{ font-size:clamp(26px,7.4vw,34px); line-height:1.45; margin-bottom:24px; }
-  .eyebrow{ font-size:10px; letter-spacing:.24em; margin-bottom:22px; }
+  .eyebrow{ font-size:11.5px; letter-spacing:.22em; margin-bottom:22px; }
   .eyebrow::before{ width:26px; }
-  .hero-lead{ font-size:14.5px; line-height:1.85; margin-bottom:30px; }
+  .hero-lead{ font-size:15.5px; line-height:1.9; margin-bottom:30px; }
   .facts{ padding-top:22px; margin-bottom:30px; gap:16px 24px; }
   .facts dd{ font-size:22px; }
   .btn{ padding:15px 26px; font-size:14.5px; }
@@ -344,26 +369,34 @@ a:focus-visible, button:focus-visible{
 
 .sec-head{ margin-bottom:clamp(36px,5vw,60px); }
 .sec-num{
-  display:inline-flex; align-items:center; gap:.8em;
-  font-family:var(--display); font-size:10px; letter-spacing:.3em;
-  color:var(--gold); margin-bottom:16px; text-transform:uppercase; font-weight:700;
+  display:inline-flex; align-items:center; gap:.75em;
+  font-family:var(--display); font-size:16px; letter-spacing:.22em;
+  color:var(--gold); margin-bottom:18px; text-transform:uppercase; font-weight:700;
 }
-.sec-num::before{ content:""; width:28px; height:1px; background:var(--gold); }
+.sec-num::before{ content:""; width:40px; height:2px; background:var(--gold); }
+/* 明るい面では濃い金に差し替える（金のままだと紙の上で 2.2:1 で読めない） */
+.s-light .sec-num, .s-white .sec-num{ color:var(--gold-ink); }
+.s-light .sec-num::before, .s-white .sec-num::before{ background:var(--gold-ink); }
 .sec-title{
   font-family:var(--mincho); font-weight:600;
   font-size:clamp(23px,3.9vw,40px); line-height:1.5; letter-spacing:.04em;
   margin:0; text-wrap:balance;
 }
-.sec-title .thin{
-  display:block; font-family:var(--gothic); font-size:.42em; line-height:1.9;
-  letter-spacing:.05em; margin-top:1em; color:var(--on-light-mute); font-weight:400;
+/* 見出しの補足文。見出し(h2)の中に入れると、読み上げの見出し一覧で
+   要旨が長文に埋もれるため、h2 の外に出して段落として置く */
+.sec-head .thin{
+  display:block; font-family:var(--gothic); font-size:clamp(16px,1.8vw,18.5px); line-height:1.9;
+  letter-spacing:.05em; margin:1em 0 0; color:var(--on-light-mute); font-weight:400;
+  max-width:44em;
 }
-.s-dark .sec-title .thin, .s-navy .sec-title .thin{ color:var(--on-dark-mute); }
+/* 中央揃えのセクションでは、幅を絞った補足文も中央に置く */
+.sec-head[style*="center"] .thin{ margin-inline:auto; }
+.s-dark .sec-head .thin, .s-navy .sec-head .thin{ color:var(--on-dark-mute); }
 
 p{ margin:0 0 1.6em; }
 p:last-child{ margin-bottom:0; }
 .lead{ font-size:clamp(17px,2.2vw,21px); line-height:1.95; font-family:var(--mincho); }
-.muted{ font-size:14px; line-height:1.9; color:var(--on-light-mute); }
+.muted{ font-size:15px; line-height:1.9; color:var(--on-light-mute); }
 .s-dark .muted, .s-navy .muted{ color:var(--on-dark-mute); }
 
 /* 1文字ずつ立ち上がる見出し（JSで span.ch に分解して使う） */
@@ -498,14 +531,15 @@ p:last-child{ margin-bottom:0; }
   display:flex; align-items:baseline; gap:.4em;
   font-family:var(--display); font-weight:800; letter-spacing:-.03em;
   font-size:clamp(46px,9vw,104px); line-height:1;
-  color:transparent; -webkit-text-stroke:1.2px var(--gold);
+  /* 明るい面に置く数字なので、輪郭・塗りとも濃い金にする */
+  color:transparent; -webkit-text-stroke:1.4px var(--gold-ink);
   margin-bottom:28px; font-variant-numeric:tabular-nums;
 }
 .years .arrow{
-  -webkit-text-stroke:0; color:var(--gold); font-size:.4em; letter-spacing:0;
+  -webkit-text-stroke:0; color:var(--gold-ink); font-size:.4em; letter-spacing:0;
   transform:translateY(-.25em);
 }
-.years .now{ -webkit-text-stroke:0; color:var(--gold); }
+.years .now{ -webkit-text-stroke:0; color:var(--gold-ink); }
 
 /* =========================================================
    男女2チーム
@@ -521,7 +555,7 @@ p:last-child{ margin-bottom:0; }
 .team .photo{ border:0; border-bottom:1px solid var(--line-dark); }
 .team-body{ padding:30px 28px 34px; position:relative; z-index:2; }
 .team-tag{
-  font-family:var(--display); font-size:10px; letter-spacing:.3em;
+  font-family:var(--display); font-size:12.5px; letter-spacing:.24em;
   color:var(--gold); font-weight:700; display:block; margin-bottom:14px;
 }
 .team-slogan{
@@ -535,7 +569,7 @@ p:last-child{ margin-bottom:0; }
   font-family:var(--mincho); font-size:clamp(16px,2vw,19px);
   color:var(--gold); margin:0 0 16px;
 }
-.team p.t{ font-size:14.5px; color:var(--on-dark-mute); margin:0; }
+.team p.t{ font-size:16px; color:var(--on-dark); margin:0; }
 .team::after{ /* 下から金の面がわずかに差す */
   content:""; position:absolute; inset:auto 0 0 0; height:0; z-index:1;
   background:linear-gradient(180deg, transparent, rgba(200,162,75,.14));
@@ -559,18 +593,18 @@ p:last-child{ margin-bottom:0; }
 .card .photo{ border:0; border-bottom:1px solid var(--line-light); }
 .card-body{ padding:28px 26px 32px; display:flex; flex-direction:column; gap:14px; flex:1; }
 .card-mark{
-  font-family:var(--display); font-size:11px; letter-spacing:.26em;
-  color:var(--gold); font-weight:800;
+  font-family:var(--display); font-size:13px; letter-spacing:.22em;
+  color:var(--gold-ink); font-weight:800;   /* カードは白地なので濃い金 */
 }
 .card h3{
   font-family:var(--mincho); font-size:clamp(22px,2.6vw,27px); letter-spacing:.09em;
   margin:0; color:var(--navy); font-weight:600;
 }
 .card h3 .sub{
-  display:block; font-family:var(--gothic); font-size:13px; letter-spacing:.05em;
+  display:block; font-family:var(--gothic); font-size:15px; letter-spacing:.05em;
   color:var(--on-light-mute); margin-top:10px; font-weight:400; line-height:1.8;
 }
-.card p{ font-size:14.5px; line-height:1.95; margin:0; color:var(--on-light); }
+.card p{ font-size:16px; line-height:1.95; margin:0; color:var(--on-light); }
 .card::before{ /* 斜めの光沢がひとなでする */
   content:""; position:absolute; top:0; left:-60%; width:45%; height:100%; z-index:3;
   background:linear-gradient(100deg, transparent, rgba(232,206,143,.28), transparent);
@@ -584,25 +618,35 @@ p:last-child{ margin-bottom:0; }
 
 .note{
   margin-top:clamp(30px,4vw,44px);
-  border-left:2px solid var(--gold); background:var(--paper-2);
-  padding:26px 28px;
+  border-left:3px solid var(--gold); background:var(--paper-2);
+  padding:28px 30px;
 }
-.note p:first-child{ font-family:var(--mincho); font-size:19px; color:var(--navy); }
+.note p{
+  font-family:var(--mincho); font-size:clamp(18px,2.2vw,22px); line-height:1.9;
+  letter-spacing:.03em; color:var(--navy); margin:0;
+}
 
 /* =========================================================
    表
    ========================================================= */
 .table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.table-scroll:focus-visible{ outline:3px solid var(--gold); outline-offset:3px; }
+/* 表がはみ出す幅のときだけ、横に動かせることを伝える */
+.table-hint{ display:none; font-size:14px; color:var(--on-light-mute); margin:0 0 10px; }
+@media (max-width:760px){ .table-hint{ display:block; } }
 table{
-  width:100%; border-collapse:collapse; font-size:14.5px; line-height:1.85;
-  background:var(--paper-2); min-width:560px;
+  /* table-layout:fixed にして、「公開する内容」と「表現方法」を必ず同じ幅にする */
+  width:100%; border-collapse:collapse; font-size:15.5px; line-height:1.85;
+  background:var(--paper-2); min-width:620px; table-layout:fixed;
 }
-th,td{ border:1px solid var(--line-light); padding:15px 17px; text-align:left; vertical-align:top; }
+th,td{ border:1px solid var(--line-light); padding:16px 18px; text-align:left; vertical-align:top; }
 thead th{
   background:var(--navy); color:#fff; font-weight:700; letter-spacing:.08em;
-  font-size:13px;
+  font-size:15px;
 }
-tbody th{ background:var(--paper); width:24%; white-space:nowrap; font-weight:700; color:var(--navy); }
+tbody th{ background:var(--paper); font-weight:700; color:var(--navy); }
+#reportTable col.c-when{ width:26%; }
+#reportTable col.c-half{ width:37%; }
 tbody tr{ opacity:0; transform:translateY(16px); transition:opacity .7s var(--ease), transform .7s var(--ease); }
 tbody tr.in{ opacity:1; transform:none; }
 
@@ -615,15 +659,15 @@ tbody tr.in{ opacity:1; transform:none; }
 @media (min-width:760px){ .terms > div{ grid-template-columns:210px 1fr; } }
 .terms dt{
   background:var(--paper); padding:18px 22px; color:var(--navy);
-  font-weight:700; font-size:13.5px; letter-spacing:.08em;
+  font-weight:700; font-size:15px; letter-spacing:.08em;
 }
-.terms dd{ margin:0; padding:18px 22px; font-size:15px; }
+.terms dd{ margin:0; padding:18px 22px; font-size:16.5px; }
 .terms dd .big{
   font-family:var(--display); font-weight:800; font-size:clamp(30px,5vw,44px);
   line-height:1.05; color:var(--navy); letter-spacing:-.02em;
   font-variant-numeric:tabular-nums;
 }
-.terms dd .big .u{ font-family:var(--gothic); font-size:.4em; font-weight:700; margin-left:.25em; letter-spacing:.04em; }
+.terms dd .big .u{ font-family:var(--gothic); font-size:.46em; font-weight:700; margin-left:.25em; letter-spacing:.04em; }
 
 .bank{ font-variant-numeric:tabular-nums; line-height:2.1; }
 .bank .no{
@@ -633,7 +677,7 @@ tbody tr.in{ opacity:1; transform:none; }
   color:var(--navy); margin:2px 0;
 }
 .copy{
-  font-family:var(--gothic); font-size:11.5px; font-weight:700; letter-spacing:.08em;
+  font-family:var(--gothic); font-size:13.5px; font-weight:700; letter-spacing:.08em;
   color:var(--navy); background:transparent;
   border:1px solid var(--navy); border-radius:2px; padding:6px 12px; cursor:pointer;
   transition:background .3s var(--ease), color .3s var(--ease);
@@ -649,11 +693,11 @@ tbody tr.in{ opacity:1; transform:none; }
 }
 .step-n{
   font-family:var(--display); font-weight:800; font-size:44px; line-height:1;
-  color:transparent; -webkit-text-stroke:1.2px var(--gold);
+  color:transparent; -webkit-text-stroke:1.4px var(--gold-ink);
   display:block; margin-bottom:14px;
 }
-.step h3{ font-size:17px; margin:0 0 12px; color:var(--navy); letter-spacing:.05em; }
-.step p{ font-size:14.5px; margin:0 0 20px; }
+.step h4{ font-size:19px; margin:0 0 12px; color:var(--navy); letter-spacing:.05em; }
+.step p{ font-size:16px; margin:0 0 20px; }
 
 .tbd{
   background:#FFF3D6; border-bottom:2px dotted #C99A22;
@@ -663,13 +707,13 @@ tbody tr.in{ opacity:1; transform:none; }
   background:rgba(200,162,75,.18); color:var(--gold-2); border-bottom-color:var(--gold);
 }
 .btn.is-tbd{
-  background:#DCD8CF; color:#6B6659; cursor:not-allowed; pointer-events:none;
+  background:#DCD8CF; color:#4A4646; cursor:not-allowed; pointer-events:none;  /* 6.6:1 */
 }
 .btn.is-tbd::before{ content:none; }
 
 .alert{
   border:1px solid #D9C79A; background:#FDF8EC; color:var(--on-light);
-  padding:22px 24px; font-size:14px; line-height:1.95;
+  padding:22px 24px; font-size:15.5px; line-height:1.95;
 }
 .alert b{ color:#7A5A00; }
 
@@ -697,9 +741,9 @@ tbody tr.in{ opacity:1; transform:none; }
 .link-ico-line svg{ width:34px; height:34px; display:block; }
 .link-body{ display:flex; flex-direction:column; gap:5px; min-width:0; }
 .link-body b{
-  font-size:16px; letter-spacing:.05em; color:#fff; font-weight:700;
+  font-size:17px; letter-spacing:.05em; color:#fff; font-weight:700;
 }
-.link-body span{ font-size:12.5px; line-height:1.7; color:var(--on-dark-mute); }
+.link-body span{ font-size:14.5px; line-height:1.7; color:var(--on-dark-mute); }
 .link-go{
   margin-left:auto; flex:none; color:var(--gold); font-size:19px;
   transition:transform .35s var(--ease);
@@ -711,12 +755,16 @@ tbody tr.in{ opacity:1; transform:none; }
    ========================================================= */
 .site-footer{
   background:var(--ground); color:var(--on-dark-mute);
-  padding:64px 0 110px; font-size:14px;
+  padding:64px 0 110px; font-size:15.5px;
   border-top:1px solid var(--line-dark);
 }
+/* フッターは暗い面。.muted の既定色（明るい面向け）のままだと 2.3:1 で読めない */
+.site-footer .muted{ color:var(--on-dark-mute); }
 .footer-brand{ font-family:var(--mincho); color:#fff; font-size:19px; letter-spacing:.08em; margin:0 0 6px; }
 .footer-links{ display:flex; flex-wrap:wrap; gap:10px 26px; margin:26px 0 0; padding:0; list-style:none; }
-.copyright{ margin-top:34px; font-size:11.5px; color:#726EA0; letter-spacing:.06em; }
+/* リンクの高さが21pxしかなく、指で押しにくい。見た目を変えずに当たり判定だけ広げる */
+.footer-links a{ display:inline-block; padding:8px 2px; margin:-8px -2px; }
+.copyright{ margin-top:34px; font-size:13.5px; color:var(--on-dark-mute); letter-spacing:.06em; }
 
 /* ===== スマホの固定CTA ===== */
 .sticky{
@@ -741,7 +789,7 @@ tbody tr.in{ opacity:1; transform:none; }
 
 /* ===== 印刷（振込情報を紙に控える人のため） ===== */
 @media print{
-  .site-header,.sticky,.progress,.grain,.marquee,.scroll-cue,#net{ display:none !important; }
+  .site-header,.sticky,.progress,.grain,.marquee,.scroll-cue{ display:none !important; }
   body{ background:#fff; color:#000; font-size:12px; }
   .section{ padding-block:18px; }
   .s-dark,.s-navy,.hero{ background:#fff !important; color:#000 !important; }
@@ -764,6 +812,7 @@ tbody tr.in{ opacity:1; transform:none; }
 </head>
 
 <body>
+<a class="skip-link" href="#top">本文へスキップ</a>
 
 <div class="grain" aria-hidden="true"></div>
 <div class="review-chip">部内レビュー用の仮公開ページです。口座番号は伏せています（本番では表示されます）。</div>
@@ -794,8 +843,6 @@ tbody tr.in{ opacity:1; transform:none; }
     <div class="hero-media" aria-hidden="true">
       <span class="photo photo-bleed clip is-filled"><picture><source srcset="assets/img/hero.webp" type="image/webp"><img src="assets/img/hero.jpg" alt="男子部の選手がスタンドの応援に向かって肩を組み並ぶ様子" width="2000" height="1334" style="object-position:center 60%;" fetchpriority="high" decoding="async"></picture></span>
     </div>
-    <canvas id="net" aria-hidden="true"></canvas>
-
     <div class="wrap hero-inner">
      <div class="hero-copy">
       <p class="eyebrow rise">創部40周年記念寄付金プロジェクト</p>
@@ -813,7 +860,8 @@ tbody tr.in{ opacity:1; transform:none; }
       <div class="facts rise d2">
         <dl>
           <dt>Goal</dt>
-          <dd><span data-count="1000" data-format="comma">0</span><span class="u">万円</span></dd>
+          <!-- 数え上げ演出の途中の数字（0や半端な値）が読み上げられないよう、確定値をラベルで渡す -->
+          <dd aria-label="目標金額 1,000万円"><span data-count="1000" data-format="comma" aria-hidden="true">0</span><span class="u" aria-hidden="true">万円</span></dd>
         </dl>
         <dl>
           <dt>Period</dt>
@@ -823,7 +871,7 @@ tbody tr.in{ opacity:1; transform:none; }
         </dl>
         <dl>
           <dt>Unit</dt>
-          <dd>1口 <span data-count="5000" data-format="comma">0</span><span class="u">円</span></dd>
+          <dd aria-label="1口 5,000円"><span aria-hidden="true">1口 </span><span data-count="5000" data-format="comma" aria-hidden="true">0</span><span class="u" aria-hidden="true">円</span></dd>
         </dl>
       </div>
 
@@ -858,14 +906,20 @@ tbody tr.in{ opacity:1; transform:none; }
   <!-- ============ 呼びかけ ============ -->
   <section class="section s-dark">
     <div class="narrow rv" style="text-align:center;">
-      <picture><source srcset="assets/img/logo-40th-white.webp" type="image/webp"><img class="logo sec-logo sec-logo-c" src="assets/img/logo-40th-white.png" alt="慶應ラクロス 創部40周年ロゴ" width="977" height="620" loading="lazy"></picture>
-      <p class="lead" data-split>
-        慶應ラクロスの歩みを築いてくださったOB・OGの皆様、<br>
-        日頃から現役部員を支えてくださる保護者・関係者の皆様、<br>
-        そして慶應ラクロスの挑戦に共感してくださるすべての皆様へ。
+      <picture><source srcset="assets/img/logo-40th-white.webp" type="image/webp"><img class="logo sec-logo sec-logo-c" src="assets/img/logo-40th-white.png" alt="" width="977" height="620" loading="lazy"></picture>
+      <!-- 1文字ずつ立ち上がる演出のため、見せる側は113個のspanに分解される。
+           そのままだと読み上げが1文字ずつ途切れるので、演出側は aria-hidden にして
+           分解していない同じ文を読み上げ用に併置する -->
+      <p class="lead">
+        <span aria-hidden="true" data-split>
+          慶應ラクロスの歩みを築いてくださったOB・OGの皆様、<br>
+          日頃から現役部員を支えてくださる保護者・関係者の皆様、<br>
+          そして慶應ラクロスの挑戦に共感してくださるすべての皆様へ。
+        </span>
+        <span class="sr-only">慶應ラクロスの歩みを築いてくださったOB・OGの皆様、日頃から現役部員を支えてくださる保護者・関係者の皆様、そして慶應ラクロスの挑戦に共感してくださるすべての皆様へ。</span>
       </p>
-      <span class="rule" style="margin:34px 0;"></span>
-      <p class="muted" style="font-size:15.5px;">
+      <span class="rule" style="margin:34px auto;"></span>
+      <p class="muted" style="font-size:17px;">
         創部40周年を機に、次の世代が新たな歴史を切り拓くための力を、ぜひお寄せください。
       </p>
     </div>
@@ -876,7 +930,7 @@ tbody tr.in{ opacity:1; transform:none; }
     <div class="wrap">
       <div class="story-grid">
         <div class="rv">
-          <picture><source srcset="assets/img/logo-40th-navy.webp" type="image/webp"><img class="logo sec-logo" src="assets/img/logo-40th-navy.png" alt="慶應ラクロス 創部40周年ロゴ" width="977" height="620" loading="lazy"></picture>
+          <picture><source srcset="assets/img/logo-40th-navy.webp" type="image/webp"><img class="logo sec-logo" src="assets/img/logo-40th-navy.png" alt="" width="977" height="620" loading="lazy"></picture>
           <p class="years" aria-label="1986年から2026年へ">
             <span data-count="1986" data-from="1946">1946</span>
             <span class="arrow">→</span>
@@ -909,10 +963,8 @@ tbody tr.in{ opacity:1; transform:none; }
     <div class="wrap">
       <div class="sec-head rv">
         <span class="sec-num">Challenge</span>
-        <h2 class="sec-title">
-          40年の歴史を、ラクロス部全体の次の挑戦へ。
-          <span class="thin">目標や戦い方はそれぞれでも、慶應ラクロスの歴史を前へ進めたいという思いは一つです。</span>
-        </h2>
+        <h2 class="sec-title">40年の歴史を、ラクロス部全体の次の挑戦へ。</h2>
+        <p class="thin">目標や戦い方はそれぞれでも、慶應ラクロスの歴史を前へ進めたいという思いは一つです。</p>
       </div>
 
       <div class="teams stagger">
@@ -1001,12 +1053,10 @@ tbody tr.in{ opacity:1; transform:none; }
   <section class="section s-light" id="use">
     <div class="wrap">
       <div class="sec-head rv">
-        <picture><source srcset="assets/img/logo-40th-navy.webp" type="image/webp"><img class="logo sec-logo" src="assets/img/logo-40th-navy.png" alt="慶應ラクロス 創部40周年ロゴ" width="977" height="620" loading="lazy"></picture>
+        <picture><source srcset="assets/img/logo-40th-navy.webp" type="image/webp"><img class="logo sec-logo" src="assets/img/logo-40th-navy.png" alt="" width="977" height="620" loading="lazy"></picture>
         <span class="sec-num">How we use</span>
-        <h2 class="sec-title">
-          次の40年に手渡す、三つの力。
-          <span class="thin">各領域の具体的な活用内容は、現役・指導部・実行委員会で協議の上、必要性と優先順位を踏まえて決定します。</span>
-        </h2>
+        <h2 class="sec-title">次の40年に手渡す、三つの力。</h2>
+        <p class="thin">各領域の具体的な活用内容は、現役・指導部・実行委員会で協議の上、必要性と優先順位を踏まえて決定します。</p>
       </div>
 
       <div class="cards stagger" id="cards">
@@ -1050,8 +1100,7 @@ tbody tr.in{ opacity:1; transform:none; }
       </div>
 
       <div class="note rv">
-        <p>三つの領域は、別々の寄付先ではありません。</p>
-        <p class="muted">
+        <p>
           皆様からのご寄付を一元的に管理し、ラクロス部全体にとって最も必要性の高いところへ、責任を持って活用します。
         </p>
       </div>
@@ -1070,7 +1119,7 @@ tbody tr.in{ opacity:1; transform:none; }
           <span class="photo r-4x3 clip is-filled"><span class="par"><picture><source srcset="assets/img/report.webp" type="image/webp"><img src="assets/img/report.jpg" alt="試合後、支えてくれた人たちと喜びを分かち合う様子" width="1600" height="1067" style="object-position:center 40%;" loading="lazy" decoding="async"></picture></span></span>
         </div>
         <div class="rv">
-          <picture><source srcset="assets/img/logo-40th-navy.webp" type="image/webp"><img class="logo sec-logo" src="assets/img/logo-40th-navy.png" alt="慶應ラクロス 創部40周年ロゴ" width="977" height="620" loading="lazy"></picture>
+          <picture><source srcset="assets/img/logo-40th-navy.webp" type="image/webp"><img class="logo sec-logo" src="assets/img/logo-40th-navy.png" alt="" width="977" height="620" loading="lazy"></picture>
           <div class="sec-head" style="margin-bottom:26px;">
             <span class="sec-num">Report</span>
             <h2 class="sec-title">皆様のご支援を、<br>見える形でお返しします。</h2>
@@ -1082,8 +1131,13 @@ tbody tr.in{ opacity:1; transform:none; }
         </div>
       </div>
 
-      <div class="table-scroll rv">
+      <p class="table-hint rv" aria-hidden="true">← 表は横にスクロールできます →</p>
+      <div class="table-scroll rv" tabindex="0" role="region" aria-label="ご寄付の活用状況の報告予定">
         <table id="reportTable">
+          <caption class="sr-only">報告のタイミング別に、公開する内容と表現方法をまとめた表</caption>
+          <colgroup>
+            <col class="c-when"><col class="c-half"><col class="c-half">
+          </colgroup>
           <thead>
             <tr>
               <th scope="col">報告のタイミング</th>
@@ -1125,12 +1179,10 @@ tbody tr.in{ opacity:1; transform:none; }
   <section class="section s-light" id="apply">
     <div class="wrap">
       <div class="sec-head rv">
-        <picture><source srcset="assets/img/logo-40th-navy.webp" type="image/webp"><img class="logo sec-logo" src="assets/img/logo-40th-navy.png" alt="慶應ラクロス 創部40周年ロゴ" width="977" height="620" loading="lazy"></picture>
+        <picture><source srcset="assets/img/logo-40th-navy.webp" type="image/webp"><img class="logo sec-logo" src="assets/img/logo-40th-navy.png" alt="" width="977" height="620" loading="lazy"></picture>
         <span class="sec-num">Support</span>
-        <h2 class="sec-title">
-          ご支援のお願い
-          <span class="thin">創部40周年を機に、慶應義塾體育會ラクロス部のさらなる発展を支えるため、下記のとおり寄付金を募集しております。</span>
-        </h2>
+        <h2 class="sec-title">ご支援のお願い</h2>
+        <p class="thin">創部40周年を機に、慶應義塾體育會ラクロス部のさらなる発展を支えるため、下記のとおり寄付金を募集しております。</p>
       </div>
 
       <dl class="terms rv">
@@ -1155,6 +1207,7 @@ tbody tr.in{ opacity:1; transform:none; }
             <span class="no">
               <span class="masked">777●●●●</span>
               <span class="muted" style="font-size:11.5px;">（レビュー版のため伏せています）</span>
+              <span id="copyStatus" class="sr-only" role="status" aria-live="polite"></span>
             </span>
             口座名：一般社団法人　ＫＥＩＯ　ＬＡＣＲＯＳＳＥ　ＢＡＳＥ
           </dd>
@@ -1175,12 +1228,12 @@ tbody tr.in{ opacity:1; transform:none; }
       <div class="steps stagger">
         <div class="step">
           <span class="step-n">01</span>
-          <h3>寄付金をお振り込みください</h3>
+          <h4>寄付金をお振り込みください</h4>
           <p>上記の口座へ、ご希望の口数分をお振り込みください。</p>
         </div>
         <div class="step">
           <span class="step-n">02</span>
-          <h3>Microsoft Formにご回答ください</h3>
+          <h4>Microsoft Formにご回答ください</h4>
           <p>お振り込み後、以下のフォームより、ご寄付に関する必要事項をご回答ください。</p>
           <a class="btn btn-gold btn-block is-tbd" href="#apply" aria-disabled="true"><span>申込フォーム（準備中）</span></a>
         </div>
@@ -1202,12 +1255,10 @@ tbody tr.in{ opacity:1; transform:none; }
   <section class="section s-dark" id="links">
     <div class="wrap">
       <div class="sec-head rv" style="text-align:center;">
-        <picture><source srcset="assets/img/logo-40th-white.webp" type="image/webp"><img class="logo sec-logo sec-logo-c" src="assets/img/logo-40th-white.png" alt="慶應ラクロス 創部40周年ロゴ" width="977" height="620" loading="lazy"></picture>
+        <picture><source srcset="assets/img/logo-40th-white.webp" type="image/webp"><img class="logo sec-logo sec-logo-c" src="assets/img/logo-40th-white.png" alt="" width="977" height="620" loading="lazy"></picture>
         <span class="sec-num" style="justify-content:center;">Follow us</span>
-        <h2 class="sec-title">
-          慶應ラクロスの「いま」は、<br>それぞれの場所でお届けしています。
-          <span class="thin">試合結果や日々の活動は各公式サイトと公式LINEで発信しています。ぜひご覧ください。</span>
-        </h2>
+        <h2 class="sec-title">慶應ラクロスの「いま」は、<br>それぞれの場所でお届けしています。</h2>
+        <p class="thin">試合結果や日々の活動は各公式サイトと公式LINEで発信しています。ぜひご覧ください。</p>
       </div>
 
       <div class="links stagger">
@@ -1216,7 +1267,7 @@ tbody tr.in{ opacity:1; transform:none; }
             <picture><source srcset="assets/img/logo-mens.webp" type="image/webp"><img src="assets/img/logo-mens.png" alt="" width="579" height="367" loading="lazy"></picture>
           </span>
           <span class="link-body">
-            <b>男子部 公式サイト</b>
+            <b>男子部 公式サイト<span class="sr-only">（新しいタブで開きます）</span></b>
             <span>試合結果・選手紹介・お知らせ</span>
           </span>
           <span class="link-go" aria-hidden="true">→</span>
@@ -1227,7 +1278,7 @@ tbody tr.in{ opacity:1; transform:none; }
             <picture><source srcset="assets/img/logo-womens.webp" type="image/webp"><img src="assets/img/logo-womens.png" alt="" width="391" height="370" loading="lazy"></picture>
           </span>
           <span class="link-body">
-            <b>女子部 公式サイト</b>
+            <b>女子部 公式サイト<span class="sr-only">（新しいタブで開きます）</span></b>
             <span>試合結果・選手紹介・お知らせ</span>
           </span>
           <span class="link-go" aria-hidden="true">→</span>
@@ -1236,7 +1287,7 @@ tbody tr.in{ opacity:1; transform:none; }
         <a class="link-card" href="https://lin.ee/cvTAzM6" target="_blank" rel="noopener">
           <span class="link-ico link-ico-line"><svg viewBox="0 0 24 24" aria-hidden="true" fill="#fff"><path d="M12 3C6.9 3 2.8 6.4 2.8 10.6c0 3.8 3.3 6.9 7.7 7.5.3.07.7.2.8.5.07.25.05.65.02.9l-.13.8c-.04.24-.19.93.82.5 1-.42 5.4-3.2 7.4-5.5 1.35-1.5 2-3 2-4.7C21.4 6.4 17.2 3 12 3zM8.2 13.2h-1.6c-.23 0-.42-.19-.42-.42V9.6c0-.23.19-.42.42-.42s.42.19.42.42v2.76h1.18c.23 0 .42.19.42.42s-.19.42-.42.42zm1.9-.42c0 .23-.19.42-.42.42s-.42-.19-.42-.42V9.6c0-.23.19-.42.42-.42s.42.19.42.42v3.18zm3.9 0c0 .18-.12.34-.29.4a.42.42 0 01-.13.02.42.42 0 01-.34-.17l-1.63-2.22v1.97c0 .23-.19.42-.42.42s-.42-.19-.42-.42V9.6c0-.18.12-.34.29-.4a.43.43 0 01.47.15l1.63 2.22V9.6c0-.23.19-.42.42-.42s.42.19.42.42v3.18zm2.6-2.01c.23 0 .42.19.42.42s-.19.42-.42.42h-1.18v.75h1.18c.23 0 .42.19.42.42s-.19.42-.42.42h-1.6a.42.42 0 01-.42-.42V9.6c0-.23.19-.42.42-.42h1.6c.23 0 .42.19.42.42s-.19.42-.42.42h-1.18v.75h1.18z"/></svg></span>
           <span class="link-body">
-            <b>公式LINE</b>
+            <b>公式LINE<span class="sr-only">（新しいタブで開きます）</span></b>
             <span>友だち追加で最新情報が届きます</span>
           </span>
           <span class="link-go" aria-hidden="true">→</span>
@@ -1249,13 +1300,13 @@ tbody tr.in{ opacity:1; transform:none; }
 
 <footer class="site-footer">
   <div class="wrap">
-<picture><source srcset="assets/img/logo-40th-white.webp" type="image/webp"><img class="logo footer-logo" src="assets/img/logo-40th-white.png" alt="慶應ラクロス 創部40周年ロゴ" width="977" height="620" loading="lazy"></picture>
+<picture><source srcset="assets/img/logo-40th-white.webp" type="image/webp"><img class="logo footer-logo" src="assets/img/logo-40th-white.png" alt="" width="977" height="620" loading="lazy"></picture>
     <p class="footer-brand">慶應義塾體育會ラクロス部</p>
     <p class="muted" style="margin:0;">創部40周年記念寄付金プロジェクト</p>
     <ul class="footer-links">
-      <li><a href="https://www.keiomenslacrosse.com/" target="_blank" rel="noopener">男子部 公式サイト</a></li>
-      <li><a href="https://keio-womenslacrosse.com/" target="_blank" rel="noopener">女子部 公式サイト</a></li>
-      <li><a href="https://lin.ee/cvTAzM6" target="_blank" rel="noopener">公式LINE</a></li>
+      <li><a href="https://www.keiomenslacrosse.com/" target="_blank" rel="noopener">男子部 公式サイト<span class="sr-only">（新しいタブで開きます）</span></a></li>
+      <li><a href="https://keio-womenslacrosse.com/" target="_blank" rel="noopener">女子部 公式サイト<span class="sr-only">（新しいタブで開きます）</span></a></li>
+      <li><a href="https://lin.ee/cvTAzM6" target="_blank" rel="noopener">公式LINE<span class="sr-only">（新しいタブで開きます）</span></a></li>
       <li><a href="mailto:fund@mitalax.onmicrosoft.com">お問い合わせ</a></li>
     </ul>
     <p class="copyright">© KEIO UNIVERSITY LACROSSE CLUB. All rights reserved.</p>
@@ -1272,8 +1323,6 @@ tbody tr.in{ opacity:1; transform:none; }
 
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var fine   = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  // 端末の性能をざっくり見て、負荷の高い演出を出すかどうかを決める
-  var lowPower = (navigator.hardwareConcurrency || 4) <= 4 || innerWidth < 760;
 
   function lerp(a, b, t) { return a + (b - a) * t; }
   function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
@@ -1284,128 +1333,6 @@ tbody tr.in{ opacity:1; transform:none; }
   requestAnimationFrame(function () {
     document.body.classList.add('is-ready');
   });
-
-  /* ---------------------------------------------------
-     2. ラクロスのポケット（網）を描くCanvas
-        マウスがある環境では位置に応じて波打ち、
-        スマホでは自走＋スクロールで揺れる
-     --------------------------------------------------- */
-  (function net() {
-    var cv = document.getElementById('net');
-    if (!cv || reduce) return;
-    var ctx = cv.getContext('2d', { alpha: true });
-    if (!ctx) return;
-
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var W = 0, H = 0, cols = 0, rows = 0, gap = 0;
-    var pts = [];
-    var pointer = { x: -9999, y: -9999, tx: -9999, ty: -9999 };
-    var t = 0, running = true, raf = 0;
-
-    function build() {
-      W = cv.clientWidth; H = cv.clientHeight;
-      cv.width = Math.floor(W * dpr);
-      cv.height = Math.floor(H * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      gap = lowPower ? 78 : 58;             // 低速端末では点を減らす
-      cols = Math.ceil(W / gap) + 2;
-      rows = Math.ceil(H / gap) + 2;
-      pts = [];
-      for (var j = 0; j < rows; j++) {
-        for (var i = 0; i < cols; i++) {
-          pts.push({ ox: (i - 1) * gap, oy: (j - 1) * gap, x: 0, y: 0 });
-        }
-      }
-    }
-
-    function draw() {
-      raf = requestAnimationFrame(draw);
-      if (!running) return;
-
-      t += lowPower ? 0.006 : 0.009;
-      pointer.x = lerp(pointer.x, pointer.tx, 0.08);
-      pointer.y = lerp(pointer.y, pointer.ty, 0.08);
-
-      ctx.clearRect(0, 0, W, H);
-
-      var i, j, p, idx;
-      // 各点をゆらす
-      for (idx = 0; idx < pts.length; idx++) {
-        p = pts[idx];
-        var wave = Math.sin(p.ox * 0.008 + t) * 6 + Math.cos(p.oy * 0.01 - t * 1.2) * 6;
-        var dx = p.ox - pointer.x, dy = p.oy - pointer.y;
-        var d2 = dx * dx + dy * dy;
-        var infl = 0;
-        if (d2 < 62500) {                    // 半径250px以内だけ反応させる
-          var d = Math.sqrt(d2) || 1;
-          infl = (1 - d / 250);
-          infl = infl * infl * 46;
-          p.x = p.ox + wave + (dx / d) * infl;
-          p.y = p.oy + wave * 0.6 + (dy / d) * infl;
-        } else {
-          p.x = p.ox + wave;
-          p.y = p.oy + wave * 0.6;
-        }
-      }
-
-      // 斜めに結んで網目にする
-      ctx.lineWidth = 1;
-      for (j = 0; j < rows; j++) {
-        for (i = 0; i < cols; i++) {
-          idx = j * cols + i;
-          p = pts[idx];
-          var fade = 1 - (p.oy / H);          // 下にいくほど薄く
-          fade = clamp(fade * 0.5 + 0.12, 0, 1);
-          if (i + 1 < cols && j + 1 < rows) {
-            var right = pts[idx + 1], down = pts[idx + cols];
-            ctx.strokeStyle = 'rgba(200,162,75,' + (0.13 * fade).toFixed(3) + ')';
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y); ctx.lineTo(right.x, right.y);
-            ctx.moveTo(p.x, p.y); ctx.lineTo(down.x, down.y);
-            ctx.stroke();
-          }
-          // 交点をぽつりと光らせる
-          if ((i + j) % 3 === 0) {
-            ctx.fillStyle = 'rgba(232,206,143,' + (0.30 * fade).toFixed(3) + ')';
-            ctx.fillRect(p.x - 0.9, p.y - 0.9, 1.8, 1.8);
-          }
-        }
-      }
-    }
-
-    build();
-    draw();
-
-    addEventListener('resize', function () { build(); }, { passive: true });
-
-    if (fine) {
-      addEventListener('pointermove', function (e) {
-        var r = cv.getBoundingClientRect();
-        pointer.tx = e.clientX - r.left;
-        pointer.ty = e.clientY - r.top;
-      }, { passive: true });
-      addEventListener('pointerleave', function () {
-        pointer.tx = -9999; pointer.ty = -9999;
-      }, { passive: true });
-    } else {
-      // タッチ端末：スクロール量で網をなでる
-      addEventListener('scroll', function () {
-        pointer.tx = W * 0.5 + Math.sin(scrollY * 0.004) * W * 0.3;
-        pointer.ty = clamp(H - scrollY * 0.6, -400, H);
-      }, { passive: true });
-    }
-
-    // 画面外・非表示のときは描画を止める（電池とCPUのため）
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (es) { running = es[0].isIntersecting; })
-        .observe(cv);
-    }
-    document.addEventListener('visibilitychange', function () {
-      if (document.hidden) { cancelAnimationFrame(raf); }
-      else { raf = requestAnimationFrame(draw); }
-    });
-  })();
 
   /* ---------------------------------------------------
      3-0. [data-split] の文字を1字ずつの span に分解する
@@ -1605,11 +1532,17 @@ tbody tr.in{ opacity:1; transform:none; }
   Array.prototype.forEach.call(document.querySelectorAll('.copy'), function (btn) {
     btn.addEventListener('click', function () {
       var text = btn.getAttribute('data-copy');
+      var status = document.getElementById('copyStatus');
       var done = function () {
         var original = btn.textContent;
         btn.textContent = 'コピーしました';
         btn.classList.add('done');
-        setTimeout(function () { btn.textContent = original; btn.classList.remove('done'); }, 2200);
+        // 見た目の変化だけでは読み上げに伝わらないので、aria-live の箱にも書く
+        if (status) { status.textContent = '口座番号をコピーしました'; }
+        setTimeout(function () {
+          btn.textContent = original; btn.classList.remove('done');
+          if (status) { status.textContent = ''; }
+        }, 2200);
       };
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(done, fallback);
@@ -1623,7 +1556,20 @@ tbody tr.in{ opacity:1; transform:none; }
         ta.select();
         try { document.execCommand('copy'); done(); } catch (err) { /* 手入力してもらう */ }
         document.body.removeChild(ta);
+        // フォーカスの当たった textarea を消すと、フォーカスが body へ飛んで
+        // キーボード操作中の現在地を見失う。明示的にボタンへ戻す
+        btn.focus();
       }
+    });
+  });
+
+  /* ---------------------------------------------------
+     9. 「準備中」のボタンはキーボードでも動かさない
+        pointer-events:none はマウスにしか効かず、Enterでは反応してしまう
+     --------------------------------------------------- */
+  Array.prototype.forEach.call(document.querySelectorAll('.is-tbd'), function (el) {
+    el.addEventListener('click', function (e) {
+      if (el.getAttribute('aria-disabled') === 'true') { e.preventDefault(); }
     });
   });
 
