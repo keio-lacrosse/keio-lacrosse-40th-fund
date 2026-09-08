@@ -304,6 +304,8 @@ a:focus-visible, button:focus-visible{
   line-height:1.25; color:#fff; font-variant-numeric:tabular-nums;
 }
 .facts dd .u{ font-size:.62em; margin-left:.15em; }
+/* 口数の注釈。数字の直下に小さく添える */
+.fact-note{ margin:6px 0 0; font-size:13.5px; line-height:1.6; color:var(--on-dark-mute); }
 
 .scroll-cue{
   position:absolute; left:50%; bottom:26px; z-index:3;
@@ -820,7 +822,7 @@ tbody tr.in{ opacity:1; transform:none; }
 <a class="skip-link" href="#top">本文へスキップ</a>
 
 <div class="grain" aria-hidden="true"></div>
-<div class="review-chip">部内レビュー用の仮公開ページです。口座番号は伏せています（本番では表示されます）。</div>
+<div class="review-chip">部内レビュー用の仮公開ページです。検索には表示されません。</div>
 
 <div class="progress" id="progress" aria-hidden="true"></div>
 
@@ -877,6 +879,7 @@ tbody tr.in{ opacity:1; transform:none; }
         <dl>
           <dt>Unit</dt>
           <dd aria-label="1口 5,000円"><span aria-hidden="true">1口 </span><span data-count="5000" data-format="comma" aria-hidden="true">0</span><span class="u" aria-hidden="true">円</span></dd>
+          <p class="fact-note">4口以上でお願い致します。</p>
         </dl>
       </div>
 
@@ -983,12 +986,12 @@ tbody tr.in{ opacity:1; transform:none; }
                      alt="慶應義塾體育會ラクロス部 男子 ロゴ" width="579" height="367" loading="lazy">
               </picture>
               <div>
-                <span class="team-tag">Men's Team</span>
+                <span class="team-tag">2026 Men's Team</span>
                 <p class="team-slogan">KING</p>
               </div>
             </div>
             <p class="team-goal">王座復権へ</p>
-            <p class="t">男子チームは「KING」を掲げ、王座復権を目指しています。</p>
+            <p class="t">2026年の男子チームは「KING」を掲げ、王座復権を目指しています。</p>
             <div class="team-strip">
               <span class="photo r-3x2 clip is-filled"><span class="par"><picture><source srcset="assets/img/mens-02.webp" type="image/webp"><img src="assets/img/mens-02.jpg" alt="大観衆を背にした男子部のサイドライン" width="1000" height="667" style="object-position:center 50%;" loading="lazy" decoding="async"></picture></span></span>
               <span class="photo r-3x2 clip is-filled"><span class="par"><picture><source srcset="assets/img/mens-03.webp" type="image/webp"><img src="assets/img/mens-03.jpg" alt="ナイター照明の下で円陣を組む男子部" width="1000" height="667" style="object-position:center 50%;" loading="lazy" decoding="async"></picture></span></span>
@@ -1006,12 +1009,12 @@ tbody tr.in{ opacity:1; transform:none; }
                      alt="慶應義塾體育會ラクロス部 女子 ロゴ" width="391" height="370" loading="lazy">
               </picture>
               <div>
-                <span class="team-tag">Women's Team</span>
+                <span class="team-tag">2026 Women's Team</span>
                 <p class="team-slogan">DRIVE</p>
               </div>
             </div>
             <p class="team-goal">4年ぶりの栄光へ</p>
-            <p class="t">女子チームは「DRIVE」を掲げ、4年ぶりの栄光を目指しています。</p>
+            <p class="t">2026年の女子チームは「DRIVE」を掲げ、4年ぶりの栄光を目指しています。</p>
             <div class="team-strip">
               <span class="photo r-3x2 clip is-filled"><span class="par"><picture><source srcset="assets/img/womens-02.webp" type="image/webp"><img src="assets/img/womens-02.jpg" alt="勝利の後にクロスを高く掲げる女子部の選手たち" width="1000" height="750" style="object-position:center 40%;" loading="lazy" decoding="async"></picture></span></span>
               <span class="photo r-3x2 clip is-filled"><span class="par"><picture><source srcset="assets/img/womens-03.webp" type="image/webp"><img src="assets/img/womens-03.jpg" alt="青いフィールドでの女子部の攻防" width="1000" height="667" style="object-position:center 45%;" loading="lazy" decoding="async"></picture></span></span>
@@ -1202,20 +1205,12 @@ tbody tr.in{ opacity:1; transform:none; }
         <div>
           <dt>申込単位</dt>
           <dd>1口 5,000円<br>
-            <span class="muted">できれば4口 2万円以上のご協力をお願いしております。</span>
+            <span class="muted">4口以上でお願い致します。</span>
           </dd>
         </div>
         <div>
           <dt>振込先</dt>
-          <dd class="bank">
-            楽天銀行　支店番号 253　第三営業支店　普通預金<br>
-            <span class="no">
-              <span class="masked">777●●●●</span>
-              <span class="muted" style="font-size:11.5px;">（レビュー版のため伏せています）</span>
-              <span id="copyStatus" class="sr-only" role="status" aria-live="polite"></span>
-            </span>
-            口座名：一般社団法人　ＫＥＩＯ　ＬＡＣＲＯＳＳＥ　ＢＡＳＥ
-          </dd>
+          <dd>アンケートフォーム記入後にお伝えいたします。</dd>
         </div>
         <div>
           <dt>寄付金控除</dt>
@@ -1233,21 +1228,21 @@ tbody tr.in{ opacity:1; transform:none; }
       <div class="steps stagger">
         <div class="step">
           <span class="step-n">01</span>
-          <h4>寄付金をお振り込みください</h4>
-          <p>上記の口座へ、ご希望の口数分をお振り込みください。</p>
+          <h4>アンケートフォームにご回答ください</h4>
+          <p>以下のフォームより、ご寄付に関する必要事項をご回答ください。</p>
+          <a class="btn btn-gold btn-block btn-arrow" href="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=0QaieAvhGE2PbSGoTkztRKd54a_JBv9DjjHvS0Lkh0tUMllTVzlHUjRIUDM2SUdTWkxLUE9KSTRUMSQlQCN0PWcu" target="_blank" rel="noopener"><span>申込フォームへ進む<span class="sr-only">（新しいタブで開きます）</span></span></a>
         </div>
         <div class="step">
           <span class="step-n">02</span>
-          <h4>Microsoft Formにご回答ください</h4>
-          <p>お振り込み後、以下のフォームより、ご寄付に関する必要事項をご回答ください。</p>
-          <a class="btn btn-gold btn-block btn-arrow" href="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=0QaieAvhGE2PbSGoTkztRKd54a_JBv9DjjHvS0Lkh0tUMllTVzlHUjRIUDM2SUdTWkxLUE9KSTRUMSQlQCN0PWcu" target="_blank" rel="noopener"><span>申込フォームへ進む<span class="sr-only">（新しいタブで開きます）</span></span></a>
+          <h4>寄付金をお振り込みください</h4>
+          <p>フォームへのご回答後にお伝えする口座へ、ご希望の口数分をお振り込みください。</p>
         </div>
       </div>
 
       <div class="alert rv" style="margin-top:30px;">
         <b>お振り込みにあたってのお願い</b><br>
-        振込先は本ページに記載の口座のみです。当部が電話・SMS・DM等で別口座への振込をご案内することはありません。
-        口座情報に関して不審な連絡を受け取られた場合は、お手数ですが下記の問い合わせ先までご確認ください。
+        振込先の口座は、アンケートフォームへのご回答後に当部よりお伝えいたします。本ページに口座情報を掲載することはありません。
+        振込先に関して不審な連絡を受け取られた場合は、お手数ですが下記の問い合わせ先までご確認ください。
       </div>
 
       <p class="muted rv" style="margin-top:30px;">
