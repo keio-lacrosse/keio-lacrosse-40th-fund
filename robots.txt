@@ -1,2 +1,5 @@
 User-agent: *
-Disallow: /
+Allow: /
+
+# 公開URLが確定したら以下を有効化する
+# Sitemap: https://<公開ドメイン>/sitemap.xml
