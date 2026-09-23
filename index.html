@@ -633,6 +633,26 @@ p:last-child{ margin-bottom:0; }
 }
 
 /* =========================================================
+   声（voices ページへの抜粋）
+   ========================================================= */
+.voice-picks{ display:grid; gap:20px; grid-template-columns:1fr; }
+@media (min-width:860px){ .voice-picks{ grid-template-columns:1fr 1fr; } }
+.voice-pick{
+  display:flex; flex-direction:column; gap:14px; text-decoration:none;
+  background:rgba(2,1,28,.42); border:1px solid var(--line-soft);
+  padding:30px 28px;
+  transition:border-color .4s var(--ease), transform .4s var(--ease), background .4s var(--ease);
+}
+.voice-pick:hover{ border-color:var(--line-dark); transform:translateY(-4px); background:rgba(2,1,28,.62); }
+.vp-line{
+  font-family:var(--mincho); font-weight:600;
+  font-size:clamp(22px,2.8vw,30px); line-height:1.5; letter-spacing:.04em; color:#fff;
+  word-break:keep-all; overflow-wrap:break-word;
+}
+.vp-body{ font-size:16px; line-height:1.95; color:var(--on-dark); }
+.vp-who{ font-size:14.5px; letter-spacing:.06em; color:var(--gold-2); margin-top:auto; }
+
+/* =========================================================
    表
    ========================================================= */
 .table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
@@ -1169,6 +1189,34 @@ tbody tr.in{ opacity:1; transform:none; }
     </div>
   </section>
 
+  <!-- ============ 声（voices ページへの導線） ============ -->
+  <section class="section s-navy" id="voices">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="sec-num">Voices</span>
+        <h2 class="sec-title">慶應ラクロスを、<br>それぞれの場所から。</h2>
+        <p class="thin">現役の主将、指導陣、OB・OGの皆様から届いた言葉を順にお伝えしています。</p>
+      </div>
+
+      <div class="voice-picks stagger">
+        <a class="voice-pick" href="voices/#minegishi-ryo">
+          <span class="vp-line">「全日本選手権優勝」</span>
+          <span class="vp-body">この挑戦は、現役選手だけで成し遂げられるものではありません。</span>
+          <span class="vp-who">2026年度 男子部主将　峰岸 諒</span>
+        </a>
+        <a class="voice-pick" href="voices/#yajima-chiho">
+          <span class="vp-line">「全層優勝」</span>
+          <span class="vp-body">180人誰1人欠けても届かない景色を、私たちは本気で目指しています。</span>
+          <span class="vp-who">2026年度 女子部主将　矢嶋 千穂</span>
+        </a>
+      </div>
+
+      <div class="btn-row rv" style="margin-top:36px;">
+        <a class="btn btn-ghost btn-arrow" href="voices/"><span>すべての声を読む</span></a>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ 募集要項・申込 ============ -->
   <section class="section s-light" id="apply">
     <div class="wrap">
@@ -1290,6 +1338,7 @@ tbody tr.in{ opacity:1; transform:none; }
     <p class="footer-brand">慶應義塾體育會ラクロス部</p>
     <p class="muted" style="margin:0;">創部40周年記念寄付金プロジェクト</p>
     <ul class="footer-links">
+      <li><a href="voices/">Voices（皆様からの声）</a></li>
       <li><a href="https://www.keiomenslacrosse.com/" target="_blank" rel="noopener">男子部 公式サイト<span class="sr-only">（新しいタブで開きます）</span></a></li>
       <li><a href="https://keio-womenslacrosse.com/" target="_blank" rel="noopener">女子部 公式サイト<span class="sr-only">（新しいタブで開きます）</span></a></li>
       <li><a href="https://lin.ee/cvTAzM6" target="_blank" rel="noopener">公式LINE<span class="sr-only">（新しいタブで開きます）</span></a></li>
