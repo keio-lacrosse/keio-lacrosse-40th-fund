@@ -289,12 +289,19 @@ a:focus-visible, button:focus-visible{ outline:3px solid var(--gold); outline-of
 
 /* ===== 1人分：本文（明るい面。ここを読ませる） ===== */
 .v-body{ padding:clamp(48px,6vw,76px) 0 clamp(56px,7vw,84px); }
+/* 本文だけは組み方が違う。見出しや短いリード（.jp）は「文節でしか折らない」が、
+   本文は両端揃えにするため「どこでも折る」に戻し、カタカナ語と英数字だけを
+   .nb（nowrap）で守っている。詳しくは build_voices.py の body_html() を参照 */
 .v-text p{
   font-family:var(--mincho);
   font-size:clamp(17px,1.9vw,19.5px); line-height:2.15; letter-spacing:.04em;
   margin:0 0 1.7em; color:var(--on-light);
-  word-break:keep-all; overflow-wrap:break-word; line-break:strict; text-wrap:pretty;
+  word-break:normal; overflow-wrap:break-word; line-break:strict; text-wrap:pretty;
+  text-align:justify;        /* 右端を揃える（日本語の書籍と同じ組み方） */
+  text-align-last:left;      /* ただし段落の最終行は伸ばさない */
 }
+/* 「慶應ラクロス」「FINAL4」「OB・OG」などを割らせない */
+.nb{ white-space:nowrap; }
 .v-text p:last-child{ margin-bottom:0; }
 .v-date{ margin:2.2em 0 0; font-size:14.5px; color:var(--on-light-mute); letter-spacing:.06em; }
 .v-cta{ margin-top:2em; }
@@ -413,11 +420,11 @@ a:focus-visible, button:focus-visible{ outline:3px solid var(--gold); outline-of
   <section class="v-body s-light">
     <div class="narrow rv">
       <div class="v-text">
-          <p>昨今、<wbr>ラクロス界全体の<wbr>競技力が<wbr>著しく<wbr>向上し、<wbr>その<wbr>実現への<wbr>道のりは<wbr>年々<wbr>険しさを<wbr>増しています。<wbr>それでも、<wbr>先代の<wbr>先輩方が<wbr>幾度と<wbr>なく<wbr>試行錯誤を<wbr>重ね、<wbr>挑み続けてきた<wbr>この<wbr>壁を<wbr>越えるべく、<wbr>今年も<wbr>また<wbr>僕たちは<wbr>歩みを<wbr>止めずに<wbr>挑戦しています。</p>
-          <p>先日、<wbr>FINAL4進出を<wbr>決めました。<wbr>しかし、<wbr>僕たちは<wbr>まだ<wbr>道半ばに<wbr>います。<wbr>社会人に<wbr>勝つために、そして<wbr>強い<wbr>慶應ラクロスを<wbr>これからも<wbr>築いていく<wbr>ために、<wbr>僕たち自身が<wbr>もう<wbr>一段、<wbr>成長しなければなりません。</p>
-          <p>この<wbr>挑戦は、<wbr>現役選手だけで<wbr>成し遂げられる<wbr>ものではありません。<wbr>これまで<wbr>慶應ラクロスを<wbr>築き、<wbr>次の<wbr>世代へと<wbr>繋いでくださった<wbr>皆様の<wbr>お力が<wbr>あってこそ、<wbr>今の<wbr>僕たちが<wbr>あります。</p>
-          <p>その<wbr>歴史を<wbr>受け継ぎ、<wbr>さらに<wbr>先へ<wbr>進むために、<wbr>今一度、<wbr>皆様の<wbr>お力を<wbr>お借りしたいと<wbr>考えています。<wbr>いただいた<wbr>ご支援を<wbr>チームの<wbr>力に<wbr>変え、<wbr>必ず<wbr>結果と<wbr>いう<wbr>形で<wbr>お返しします。</p>
-          <p>日本一に<wbr>なる<wbr>ために。<br>永遠に<wbr>続く<wbr>強い<wbr>慶應ラクロスを<wbr>創る<wbr>ために。<br>皆様の<wbr>ご支援を、<wbr>何卒よろしく<wbr>お願いいたします。</p>
+          <p>昨今、<span class="nb">ラクロス</span>界全体の競技力が著しく向上し、その実現への道のりは年々険しさを増しています。それでも、先代の先輩方が幾度となく試行錯誤を重ね、挑み続けてきたこの壁を越えるべく、今年もまた僕たちは歩みを止めずに<span class="nb">挑戦しています。</span></p>
+          <p>先日、<span class="nb">FINAL4</span>進出を決めました。しかし、僕たちはまだ道半ばにいます。社会人に勝つために、そして強い慶應<span class="nb">ラクロス</span>をこれからも築いていくために、僕たち自身がもう一段、<span class="nb">成長しなければなりません。</span></p>
+          <p>この挑戦は、現役選手だけで成し遂げられるものではありません。これまで慶應<span class="nb">ラクロス</span>を築き、次の世代へと繋いでくださった皆様のお力があってこそ、今の僕たちが<span class="nb">あります。</span></p>
+          <p>その歴史を受け継ぎ、さらに先へ進むために、今一度、皆様のお力をお借りしたいと考えています。いただいたご支援を<span class="nb">チーム</span>の力に変え、必ず結果という形で<span class="nb">お返しします。</span></p>
+          <p>日本一になる<span class="nb">ために。</span><br>永遠に続く強い慶應<span class="nb">ラクロス</span>を創る<span class="nb">ために。</span><br>皆様のご支援を、何卒よろしく<span class="nb">お願いいたします。</span></p>
       </div>
       <p class="v-date">掲載：2026年9月23日</p>
       <div class="btn-row v-cta">
@@ -449,11 +456,11 @@ a:focus-visible, button:focus-visible{ outline:3px solid var(--gold); outline-of
   <section class="v-body s-light">
     <div class="narrow rv">
       <div class="v-text">
-          <p>約180名、<wbr>4つの<wbr>チーム。<wbr>置かれた<wbr>場所も<wbr>立場も、<wbr>抱く<wbr>感情も<wbr>全員<wbr>違います。<wbr>だけれども、<wbr>壁に<wbr>ぶつかりながらも<wbr>優勝を<wbr>目指して<wbr>前を<wbr>向く<wbr>姿は、<wbr>どの<wbr>チームであっても<wbr>変わりません。</p>
-          <p>全員が<wbr>自分の<wbr>役割を<wbr>全うし、<wbr>すべての<wbr>層で<wbr>頂点に<wbr>立つ。<wbr>180人誰1人欠けても<wbr>届かない<wbr>景色を、<wbr>私たちは<wbr>本気で<wbr>目指しています。</p>
-          <p>この<wbr>大きな<wbr>目標を<wbr>達成する<wbr>ためには、<wbr>日頃から<wbr>支えてくださる<wbr>皆様の<wbr>ご協力と<wbr>ご支援が<wbr>欠かせません。<wbr>いただきました<wbr>寄付金は、<wbr>選手が<wbr>全力で<wbr>挑戦し続けられる<wbr>環境作りの<wbr>ために<wbr>大切に<wbr>使わせていただきます。</p>
-          <p>今を<wbr>全力で<wbr>戦う<wbr>私たちの<wbr>姿が、<wbr>そして<wbr>今創り上げる<wbr>環境が、<wbr>これから<wbr>慶應の<wbr>門を<wbr>叩く<wbr>未来の<wbr>後輩たちの<wbr>大きな<wbr>糧に<wbr>なると<wbr>信じています。</p>
-          <p>応援してくださる<wbr>皆様に<wbr>結果で<wbr>恩返しを<wbr>し、<wbr>最高の<wbr>伝統を<wbr>次の<wbr>世代へ<wbr>繋ぐ<wbr>ため、<wbr>チーム一丸と<wbr>なって<wbr>駆け抜けて<wbr>参ります。<br>温かい<wbr>ご支援の<wbr>ほど、<wbr>何卒よろしく<wbr>お願い<wbr>申し上げます。</p>
+          <p>約<span class="nb">180</span>名、<span class="nb">4</span>つの<span class="nb">チーム</span>。置かれた場所も立場も、抱く感情も全員違います。だけれども、壁にぶつかりながらも優勝を目指して前を向く姿は、どの<span class="nb">チーム</span>であっても<span class="nb">変わりません。</span></p>
+          <p>全員が自分の役割を全うし、すべての層で頂点に立つ。<span class="nb">180</span>人誰<span class="nb">1</span>人欠けても届かない景色を、私たちは本気で<span class="nb">目指しています。</span></p>
+          <p>この大きな目標を達成するためには、日頃から支えてくださる皆様のご協力とご支援が欠かせません。いただきました寄付金は、選手が全力で挑戦し続けられる環境作りのために大切に<span class="nb">使わせていただきます。</span></p>
+          <p>今を全力で戦う私たちの姿が、そして今創り上げる環境が、これから慶應の門を叩く未来の後輩たちの大きな糧になると<span class="nb">信じています。</span></p>
+          <p>応援してくださる皆様に結果で恩返しをし、最高の伝統を次の世代へ繋ぐため、<span class="nb">チーム</span>一丸となって駆け抜けて<span class="nb">参ります。</span><br>温かいご支援のほど、何卒よろしくお願い<span class="nb">申し上げます。</span></p>
       </div>
       <p class="v-date">掲載：2026年9月23日</p>
       <div class="btn-row v-cta">
