@@ -233,7 +233,9 @@ a:focus-visible, button:focus-visible{ outline:3px solid var(--gold); outline-of
   flex:none; width:76px; height:76px; overflow:hidden;
   background:linear-gradient(140deg,#05033A,#0A0757); border:1px solid var(--line-dark);
 }
-.tile-img img{ width:100%; height:100%; object-fit:cover; }
+/* 正方形のタイルに 4:5 の肖像を流し込む。中央だと胴体が来るので、
+   顔のある上寄り（20%）を見せる。全員分これ一律で合う */
+.tile-img img{ width:100%; height:100%; object-fit:cover; object-position:center 20%; }
 .tile-blank{
   display:block; width:100%; height:100%; opacity:.5;
   background-image:
@@ -264,6 +266,9 @@ a:focus-visible, button:focus-visible{ outline:3px solid var(--gold); outline-of
   background:linear-gradient(140deg,#05033A 0%,#0A0757 100%); border:1px solid var(--line-dark);
 }
 .r-4x5{ aspect-ratio:4/5; }
+.r-3x2{ aspect-ratio:3/2; }
+/* 本文の最後に置くプレー写真 */
+.v-action{ margin:2.6em 0 0; }
 .photo img{ width:100%; height:100%; object-fit:cover; }
 .photo-blank{
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
@@ -379,7 +384,7 @@ a:focus-visible, button:focus-visible{ outline:3px solid var(--gold); outline-of
       <h2>掲載中の2名</h2>
       <div class="tiles rv">
         <a class="tile" href="#minegishi-ryo">
-          <span class="tile-img"><span class="tile-blank" aria-hidden="true"></span></span>
+          <span class="tile-img"><picture><source srcset="../assets/img/voices/minegishi-ryo.webp" type="image/webp"><img src="../assets/img/voices/minegishi-ryo.jpg" alt="" width="720" height="900" loading="lazy" decoding="async"></picture></span>
           <span class="tile-body">
             <span class="badge cat-genneki">現役</span>
             <b>峰岸 諒</b>
@@ -387,7 +392,7 @@ a:focus-visible, button:focus-visible{ outline:3px solid var(--gold); outline-of
           </span>
         </a>
         <a class="tile" href="#yajima-chiho">
-          <span class="tile-img"><span class="tile-blank" aria-hidden="true"></span></span>
+          <span class="tile-img"><picture><source srcset="../assets/img/voices/yajima-chiho.webp" type="image/webp"><img src="../assets/img/voices/yajima-chiho.jpg" alt="" width="720" height="900" loading="lazy" decoding="async"></picture></span>
           <span class="tile-body">
             <span class="badge cat-genneki">現役</span>
             <b>矢嶋 千穂</b>
@@ -402,7 +407,7 @@ a:focus-visible, button:focus-visible{ outline:3px solid var(--gold); outline-of
   <section class="v-head s-dark" id="minegishi-ryo">
     <div class="wrap v-head-grid rv">
       <div class="v-photo">
-        <span class="photo r-4x5 clip is-filled"><span class="photo-blank" aria-hidden="true">写真を準備中です</span></span>
+        <span class="photo r-4x5 clip is-filled"><picture><source srcset="../assets/img/voices/minegishi-ryo.webp" type="image/webp"><img src="../assets/img/voices/minegishi-ryo.jpg" alt="2026年度 男子部主将 峰岸 諒さん" width="720" height="900" loading="lazy" decoding="async"></picture></span>
       </div>
       <div class="v-intro">
         <span class="v-num">01</span>
@@ -426,6 +431,9 @@ a:focus-visible, button:focus-visible{ outline:3px solid var(--gold); outline-of
           <p>その歴史を受け継ぎ、さらに先へ進むために、今一度、皆様のお力をお借りしたいと考えています。いただいたご支援を<span class="nb">チーム</span>の力に変え、必ず結果という形で<span class="nb">お返しします。</span></p>
           <p>日本一になる<span class="nb">ために。</span><br>永遠に続く強い慶應<span class="nb">ラクロス</span>を創る<span class="nb">ために。</span><br>皆様のご支援を、何卒よろしく<span class="nb">お願いいたします。</span></p>
       </div>
+      <div class="v-action">
+        <span class="photo r-3x2 clip is-filled"><picture><source srcset="../assets/img/voices/minegishi-ryo-2.webp" type="image/webp"><img src="../assets/img/voices/minegishi-ryo-2.jpg" alt="峰岸 諒さんのプレー中の様子" width="1400" height="933" loading="lazy" decoding="async"></picture></span>
+      </div>
       <p class="v-date">掲載：2026年9月23日</p>
       <div class="btn-row v-cta">
         <a class="btn btn-dark btn-arrow" href="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=0QaieAvhGE2PbSGoTkztRKd54a_JBv9DjjHvS0Lkh0tUMllTVzlHUjRIUDM2SUdTWkxLUE9KSTRUMSQlQCN0PWcu" target="_blank" rel="noopener"><span>ご寄付のお申し込み<span class="sr-only">（新しいタブで開きます）</span></span></a>
@@ -438,7 +446,7 @@ a:focus-visible, button:focus-visible{ outline:3px solid var(--gold); outline-of
   <section class="v-head s-dark" id="yajima-chiho">
     <div class="wrap v-head-grid rv">
       <div class="v-photo">
-        <span class="photo r-4x5 clip is-filled"><span class="photo-blank" aria-hidden="true">写真を準備中です</span></span>
+        <span class="photo r-4x5 clip is-filled"><picture><source srcset="../assets/img/voices/yajima-chiho.webp" type="image/webp"><img src="../assets/img/voices/yajima-chiho.jpg" alt="2026年度 女子部主将 矢嶋 千穂さん" width="720" height="900" loading="lazy" decoding="async"></picture></span>
       </div>
       <div class="v-intro">
         <span class="v-num">02</span>
@@ -461,6 +469,9 @@ a:focus-visible, button:focus-visible{ outline:3px solid var(--gold); outline-of
           <p>この大きな目標を達成するためには、日頃から支えてくださる皆様のご協力とご支援が欠かせません。いただきました寄付金は、選手が全力で挑戦し続けられる環境作りのために大切に<span class="nb">使わせていただきます。</span></p>
           <p>今を全力で戦う私たちの姿が、そして今創り上げる環境が、これから慶應の門を叩く未来の後輩たちの大きな糧になると<span class="nb">信じています。</span></p>
           <p>応援してくださる皆様に結果で恩返しをし、最高の伝統を次の世代へ繋ぐため、<span class="nb">チーム</span>一丸となって駆け抜けて<span class="nb">参ります。</span><br>温かいご支援のほど、何卒よろしくお願い<span class="nb">申し上げます。</span></p>
+      </div>
+      <div class="v-action">
+        <span class="photo r-3x2 clip is-filled"><picture><source srcset="../assets/img/voices/yajima-chiho-2.webp" type="image/webp"><img src="../assets/img/voices/yajima-chiho-2.jpg" alt="矢嶋 千穂さんのプレー中の様子" width="1400" height="933" loading="lazy" decoding="async"></picture></span>
       </div>
       <p class="v-date">掲載：2026年9月23日</p>
       <div class="btn-row v-cta">
