@@ -1,0 +1,4 @@
+# 組み立て結果と自動生成物（GitHub Actions が毎回作り直す）
+_site/
+site/voices/
+__pycache__/
